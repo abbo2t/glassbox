@@ -3,8 +3,8 @@ import {Appearance, StyleSheet, Text, View} from 'react-native';
 import {useEffect, useState} from "react";
 
 export default function App() {
-  const [solved, setSolved] = useState(false)
-  const [colorSchemeHasChanged, setColorSchemeHasChanged] = useState(false)
+  const [solved, setSolved] = useState(false);
+  const [colorSchemeHasChanged, setColorSchemeHasChanged] = useState(false);
 
   useEffect(() => {
     const originalColorScheme = Appearance.getColorScheme();
@@ -16,7 +16,7 @@ export default function App() {
         setSolved(true);
       }
     });
-  }, [])
+  }, []);
 
   return (
     <View style={styles.container}>
