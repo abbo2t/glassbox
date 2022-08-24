@@ -6,6 +6,6 @@ import App from './App';
 describe('<App />', () => {
     it('has 1 child', async () => {
         render(<App />);
-        const button = await screen.findByText('good luck!');
+        const button = await screen.findByText('Go to first puzzle');
     });
 });
