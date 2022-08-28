@@ -1,15 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
-import {Appearance, StyleSheet, Text, View, Button} from 'react-native';
+import { Appearance, StyleSheet, Text, View, Button} from 'react-native';
 import {useEffect, useState} from "react";
 
-export default ({ navigation, route }) => {
+const PuzzleOne = ({ navigation, route }) => {
     const [solved, setSolved] = useState(false);
     const [colorSchemeHasChanged, setColorSchemeHasChanged] = useState(false);
   
     useEffect(() => {
       const originalColorScheme = Appearance.getColorScheme();
-  
-      Appearance.addChangeListener(() => {
+
+      Appearance.addChangeListener((event) => {
         if (Appearance.getColorScheme() !== originalColorScheme) {
           setColorSchemeHasChanged(true);
         } else {
@@ -33,3 +33,5 @@ export default ({ navigation, route }) => {
       justifyContent: 'center',
     },
   });
+
+  export default PuzzleOne;
