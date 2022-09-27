@@ -5005,6 +5005,13 @@ expo-manifests@~0.3.0:
   dependencies:
     expo-json-utils "~0.3.0"
 
+expo-media-library@~14.2.0:
+  version "14.2.0"
+  resolved "https://registry.yarnpkg.com/expo-media-library/-/expo-media-library-14.2.0.tgz#d793ba91a21661920f2f894290670a142d160143"
+  integrity sha512-Z7PFo742oCUDBXkSkz7yqveiRxYxAuxeYOWS6khnEJg0wMghJg1NeSyObFKkfOLEqItbFUJ8r6wi+B97ZGmiFA==
+  dependencies:
+    "@expo/config-plugins" "~5.0.0"
+
 expo-modules-autolinking@0.10.2:
   version "0.10.2"
   resolved "https://registry.npmjs.org/expo-modules-autolinking/-/expo-modules-autolinking-0.10.2.tgz"
@@ -5033,6 +5040,11 @@ expo-pwa@0.0.123:
     chalk "^4.0.0"
     commander "2.20.0"
     update-check "1.5.3"
+
+expo-screen-capture@~4.3.0:
+  version "4.3.0"
+  resolved "https://registry.yarnpkg.com/expo-screen-capture/-/expo-screen-capture-4.3.0.tgz#b3f5190bc251ee3e58acf7d7131b36bca81a0d88"
+  integrity sha512-tRoBPrpFsjbDq70Qx1T4cqlsoqNyeEAagK6mpaR0h/UmFmMUXeF/C/3j6BHrQqYAeVOVA9TQNrsFiw8n7JONCg==
 
 expo-status-bar@~1.4.0:
   version "1.4.0"
@@ -9696,6 +9708,11 @@ react-native-codegen@^0.69.1:
     jscodeshift "^0.13.1"
     nullthrows "^1.1.1"
 
+react-native-device-info@^10.1.2:
+  version "10.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-device-info/-/react-native-device-info-10.1.2.tgz#45edf04fcb8e7cee7308e7a77511752ce41b84ef"
+  integrity sha512-ap1pU1mZzQoq7fpFt9IqK7vhtxtu+KWEnbq/gIHtsyiTKi4SbBs48z07cINBf7wR2s1y1LsKP6gCJm2rzz6ehg==
+
 react-native-gradle-plugin@^0.0.7:
   version "0.0.7"
   resolved "https://registry.npmjs.org/react-native-gradle-plugin/-/react-native-gradle-plugin-0.0.7.tgz"
@@ -9713,6 +9730,11 @@ react-native-screens@~3.15.0:
   dependencies:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
+
+react-native-volume-manager@^0.4.1:
+  version "0.4.1"
+  resolved "https://registry.yarnpkg.com/react-native-volume-manager/-/react-native-volume-manager-0.4.1.tgz#329123bbe051be78014595c5cb00100dcca771da"
+  integrity sha512-Vwqo4ZsQ1vrGrC14xvZS+O6KwPhaV4R63jrQZQOCIi7NvIgoocXG4hJiDJ7nA486yi6WTZ2HAjv9clm/yvCKVw==
 
 react-native-web@~0.18.7:
   version "0.18.7"

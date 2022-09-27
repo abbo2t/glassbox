@@ -10,6 +10,7 @@ const PuzzleOne = ({ navigation, route }) => {
       const originalColorScheme = Appearance.getColorScheme();
 
       Appearance.addChangeListener((event) => {
+        console.log('heyyyyyy');
         if (Appearance.getColorScheme() !== originalColorScheme) {
           setColorSchemeHasChanged(true);
         } else {

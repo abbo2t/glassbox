@@ -10,175 +10,107 @@ import {
   AppearancePreferences,
   NativeSyntheticEvent,
   EventEmitter,
+  //RCTNativeAppEventEmitter,
   RCTNativeAppEventEmitter,
+  NativeAppEventEmitter,
+  NativeAppearance,
 } from "react-native";
-//import { EventEmitter } from "fbemitter";
+
+
 
 //const EventEmitter = require('EventEmitter');
- //const RCTDeviceEventEmitter = require('RCTDeviceEventEmitter');
- /**
-  * Mock the NativeEventEmitter as a normal JS EventEmitter.
-  */
-//class NativeEventEmitter extends EventEmitter {
-  /*  constructor() {
-     //super(RCTDeviceEventEmitterStatic.sharedSubscriber);
-   } */
- //}
-/*
-function getQuery() {
-  if (typeof window === "undefined" || !window.matchMedia) return null;
-  return window.matchMedia("(prefers-color-scheme: dark)");
-}
+//const RCTDeviceEventEmitter = require('RCTDeviceEventEmitter');
 
-function isMediaQueryList(query) {
-  return (
-    query &&
-    query.addListener &&
-    query.removeListener 
-    //&& typeof query.matches === "boolean"
-  );
-}
+/**
+ * Mock the NativeEventEmitter as a normal JS EventEmitter.
+ */
+// export class NativeEventEmitter extends EventEmitter {
+//   constructor() {
+//     super(RCTNativeAppEventEmitter.sharedSubscriber);
+//   }
+// }
 
-const NativeAppearance = {
-  get name() {
-    return "NativeAppearance";
-  },
-  get initialPreferences() {
-    const query = getQuery();
-    if (isMediaQueryList(query)) {
-      return { colorScheme: query.matches ? "dark" : "light" };
-    }
-    return { colorScheme: "no-preference" };
-  },
-  addListener() {},
-  removeListener() {},
-  removeListeners() {},
-};
+// NativeModules.Appearance = {
+//   addChangeListener: jest.fn(),
+//   //removeChangeListener: jest.fn(),
+//   getColorScheme: jest.fn(),
+//   useAppearance: jest.fn()
+// };
 
-const set = (preferences) => {
-  let { colorScheme } = preferences;
+jest.mock(
+  '../node_modules/react-native/Libraries/EventEmitter/NativeEventEmitter'
+);
 
-  // Don't bother emitting if it's the same value
-  if (appearancePreferences.colorScheme !== colorScheme) {
-    appearancePreferences = { colorScheme };
-    eventEmitter.emit("change", preferences);
-  }
-};
+// jest.mock(
+//   "../node_modules/react-native/Libraries/vendor/emitter/EventEmitter"
+// );
 
-function NativeAppearanceProvider(props) {
-  React.useEffect(() => {
-    const query = getQuery();
 
-    function listener({ matches }) {
-      const colorScheme = matches ? "dark" : "light";
-      SyntheticPlatformEmitter.emit("appearanceChanged", {
-        colorScheme,
-      });
-    }
+// jest.mock(
+//   "../node_modules/react-native/Libraries/Utilities/Appearance"
+// );
+jest.spyOn(Appearance, 'getColorScheme');
+jest.spyOn(Appearance, 'addChangeListener');
+//jest.spyOn(EventEmitter, )
 
-    if (query) query.addListener(listener);
+//console.log(EventEmitter);
 
-    return () => {
-      if (query) {
-        query.removeListener(listener);
-      }
-    };
-  }, []);
 
-  return <View style={{ flex: 1 }} {...props} />;
-}
 
-// Initialize the user-facing event emitter
-//const eventEmitter = new EventEmitter();
+// const nativeEventEmitter = new NativeEventEmitter({
+//   'removeListeners': () => { console.log('removeListeners') },
+//   'addListener': () => { console.log('addlistener called') },
+// });
 
-// Initialize preferences synchronously
-let appearancePreferences = NativeAppearance.initialPreferences;
+// const mockAppearance = (theme) => {
+//   const events = {};
+//   jest.spyOn(window, 'addEventListener').mockImplementation((event, handle, options) => {
+//     events[event] = handle;
+//   });
+//   const switchAppearance = new window.Event(theme);
+//   act(() => {
+//     window.dispatchEvent(switchAppearance);
+//   });
+// };
 
-// Initialize the native event emitter
-const nativeEventEmitter = new NativeEventEmitter(NativeAppearance);
-nativeEventEmitter.addListener("appearanceChanged", (newAppearance) => {
-  //Appearance.set(newAppearance);
-}); */
-
- //const RCTDeviceEventEmitter = require('RCTNativeAppEventEmitter');
- /**
-  * Mock the NativeEventEmitter as a normal JS EventEmitter.
-  */
-/*  class NativeEventEmitter extends EventEmitter {
-   constructor() {
-     super(RCTNativeAppEventEmitter.sharedSubscriber);
-   }
- } */
-
- //const eventEmitter = new NativeEventEmitter();
- //eventEmitter.emit('SomeEventYouListenTo');
+const nativeEventEmitter = new NativeEventEmitter();
 
 describe("<PuzzleOne />", () => {
-  //console.log(screen);
-  it("has 1 child", async () => {
-   /*  const colorScheme = Appearance.getColorScheme();
-    const eventEmitter = new NativeEventEmitter(NativeAppearance);
- */
-    jest
-      .spyOn(Appearance, "getColorScheme")
-      .mockReturnValue("light")
-      .mockReturnValueOnce("dark")
-      .mockReturnValueOnce("light");
-    render(<PuzzleOne />);
+  //console.log(Appearance);
+  //const nativeEventEmitter = new NativeEventEmitter();
+  it('switches to light mode and back to dark mode', async () => {
+    let { container } = render(<PuzzleOne />);
+    //nativeEventEmitter.emit('appearanceChanged', {"colorScheme": "light"});
+    console.log(container);
+    fireEvent(container, 'change', {"colorScheme": "dark"});
     const button = await screen.findByText("good luck!");
-    //window.dispatchEvent(new Event('getColorScheme'));
-    //const nativeEmitter = new NativeEventEmitter();
-    //foo.emit('getColorScheme');
-    //NativeEventEmitter.emit('Appearance.change', ['dark']);
-    /*eventEmitter.emit("AppearancePreferences.change", { colorScheme: "dark" });
-    eventEmitter.emit("Appearance.change", { colorScheme: "dark" });
-    eventEmitter.emit("Appearancechange", { colorScheme: "dark" });
-    eventEmitter.emit("AppearanceChange", { colorScheme: "dark" });
-    eventEmitter.emit("Appearance-Change", { colorScheme: "dark" });
-    eventEmitter.emit("Appearance-change", { colorScheme: "dark" });
-    eventEmitter.emit("appearanceChanged", { colorScheme: "dark" });
-    eventEmitter.emit("AppearanceListener", { colorScheme: "dark" });
-    eventEmitter.emit("Appearance", { colorScheme: "dark" });
-    eventEmitter.emit("AppearancePreferences", { colorScheme: "dark" });
-    eventEmitter.emit("AppearancePreference", { colorScheme: "dark" });
-    eventEmitter.emit("Appearance/change", { colorScheme: "dark" });
-    eventEmitter.emit("ColorScheme", { colorScheme: "dark" });
-    eventEmitter.emit("colorScheme", { colorScheme: "dark" });
-    eventEmitter.emit("MediaQueryListEvent.change", { colorScheme: "dark" });
-    eventEmitter.emit("MediaQueryListEvent", { colorScheme: "dark" });
-    eventEmitter.emit("MediaQueryList", { colorScheme: "dark" });
-    eventEmitter.emit("matchMedia", { colorScheme: "dark" });
-    eventEmitter.emit("MatchMedia", { colorScheme: "dark" });
-    eventEmitter.emit("change", { colorScheme: "dark" });
-    eventEmitter.emit("AddChangeListener", { colorScheme: "dark" });*/
-
-   /*fireEvent(screen, "AppearancePreferences.change", { colorScheme: "dark" });
-   fireEvent(screen, "Appearance.change", { colorScheme: "dark" });
-   fireEvent(screen, "Appearancechange", { colorScheme: "dark" });
-   fireEvent(screen, "AppearanceChange", { colorScheme: "dark" });
-   fireEvent(screen, "Appearance-Change", { colorScheme: "dark" });
-   fireEvent(screen, "Appearance-change", { colorScheme: "dark" });
-   fireEvent(screen, "appearanceChanged", { colorScheme: "dark" });
-   fireEvent(screen, "AppearanceListener", { colorScheme: "dark" });
-   fireEvent(screen, "Appearance", { colorScheme: "dark" });
-   fireEvent(screen, "AppearancePreferences", { colorScheme: "dark" });
-   fireEvent(screen, "AppearancePreference", { colorScheme: "dark" });
-   fireEvent(screen, "Appearance/change", { colorScheme: "dark" });
-   fireEvent(screen, "ColorScheme", { colorScheme: "dark" });
-   fireEvent(screen, "colorScheme", { colorScheme: "dark" });
-   fireEvent(screen, "MediaQueryListEvent.change", { colorScheme: "dark" });
-   fireEvent(screen, "MediaQueryListEvent", { colorScheme: "dark" });
-   fireEvent(screen, "MediaQueryList", { colorScheme: "dark" });
-   fireEvent(screen, "matchMedia", { colorScheme: "dark" });
-   fireEvent(screen, "MatchMedia", { colorScheme: "dark" });*/
-   fireEvent(screen.container, "change", { colorScheme: "dark" });
-   //fireEvent(screen, "AddChangeListener", { colorScheme: "dark" });
-
-    //appearancePreferences = NativeAppearance;
-    //eventEmitter.emit("change", appearancePreferences);
-
-    //window.document.dispatchEvent(new CustomEvent('getColorScheme'));
-
-    const button2 = await screen.findByText("almost there!");
+    //nativeEventEmitter.emit('appearanceChanged', {"colorScheme": "dark"});
+    fireEvent(container, 'appearanceChanged', {"colorScheme": "light"});
+    
+    expect(Appearance.addChangeListener).toHaveBeenCalled();
+    //const button2 = await screen.findByText(" almost there! good luck!");
+    
+    // mockAppearance('light');
+    //expect(screen.getByText('good luck!')).toBeInTheDocument();
+   /// mockAppearance('dark');
+    //expect(screen.getByText(' almost there! good luck!')).toBeInTheDocument();
   });
+
+  /* it("does the right shit.", async () => {
+    // jest
+    //   .spyOn(window, "matchMedia")
+    //   .mockReturnValue({matches: true})
+    //   .mockReturnValueOnce({matches: false})
+    //   .mockReturnValueOnce({matches: true});
+    const { getByTestId } = render(<PuzzleOne />);
+    //console.log(window.matchMedia('(prefers-color-scheme: dark)'));
+    const button = await screen.findByText("good luck!");
+    //fireEvent(Appearance, 'change', {});
+    //Appearance.set({'asfd': 'asdf'});
+
+    nativeEventEmitter.emit('change', { 'colorScheme': 'dark' });
+    nativeEventEmitter.emit('appearanceChanged', { 'colorScheme': 'light' });
+
+    let btn2 = await screen.findByText(" almost there! good luck!");
+  }); */
 });
