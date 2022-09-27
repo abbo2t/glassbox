@@ -1,5 +1,5 @@
 import "./mocks/matchMedia.mock"; // Must be imported before the tested file
-import React from "react";
+import React, { useRef } from "react";
 import { render, screen, fireEvent } from "@testing-library/react-native";
 import PuzzleOne from "../components/PuzzleOne";
 import {
@@ -49,8 +49,10 @@ jest.mock(
 // jest.mock(
 //   "../node_modules/react-native/Libraries/Utilities/Appearance"
 // );
-jest.spyOn(Appearance, 'getColorScheme');
-jest.spyOn(Appearance, 'addChangeListener');
+//jest.fn(Appearance, 'getColorScheme');
+const Appearance2 = Appearance;
+jest.mock(Appearance2, () => Appearance2.getColorScheme()).mockReturnValueOnce('dark').mockReturnValueOnce('light');
+jest.spyOn(Appearance2, 'addChangeListener');
 //jest.spyOn(EventEmitter, )
 
 //console.log(EventEmitter);
@@ -73,22 +75,35 @@ jest.spyOn(Appearance, 'addChangeListener');
 //   });
 // };
 
+const setSolved = function(){};
+const setColorSchemeHasChanged = function(){};
+
 const nativeEventEmitter = new NativeEventEmitter();
+const originalColorScheme = 'light';
+
+const respondToAppearanceChange = (setSolved, setColorSchemeHasChanged) => {
+  console.log('heyyyyyy');
+  if (Appearance.getColorScheme() !== originalColorScheme) {
+    setColorSchemeHasChanged(true);
+  } else {
+    setSolved(true);
+  }
+}
 
 describe("<PuzzleOne />", () => {
   //console.log(Appearance);
   //const nativeEventEmitter = new NativeEventEmitter();
   it('switches to light mode and back to dark mode', async () => {
-    let { container } = render(<PuzzleOne />);
+    let { container } = render(<PuzzleOne respondToAppearanceChange={() => respondToAppearanceChange(setSolved, setColorSchemeHasChanged)} />);
     //nativeEventEmitter.emit('appearanceChanged', {"colorScheme": "light"});
-    console.log(container);
-    fireEvent(container, 'change', {"colorScheme": "dark"});
+    //console.log(container);
+    fireEvent(container, 'respondToAppearanceChange', {"colorScheme": "dark"});
     const button = await screen.findByText("good luck!");
     //nativeEventEmitter.emit('appearanceChanged', {"colorScheme": "dark"});
     fireEvent(container, 'appearanceChanged', {"colorScheme": "light"});
     
     expect(Appearance.addChangeListener).toHaveBeenCalled();
-    //const button2 = await screen.findByText(" almost there! good luck!");
+    const button2 = await screen.findByText(" almost there! good luck!");
     
     // mockAppearance('light');
     //expect(screen.getByText('good luck!')).toBeInTheDocument();

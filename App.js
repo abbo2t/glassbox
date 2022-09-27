@@ -10,6 +10,17 @@ import PuzzleEighteen from './components/PuzzleEighteen';
 
 const Stack = createNativeStackNavigator();
 
+const originalColorScheme = 'light';
+
+const respondToAppearanceChange = (setSolved, setColorSchemeHasChanged) => {
+  console.log('yooooo');
+  if (Appearance.getColorScheme() !== originalColorScheme) {
+    setColorSchemeHasChanged(true);
+  } else {
+    setSolved(true);
+  }
+}
+
 export default function App() {
   return (
     <NavigationContainer>
@@ -29,7 +40,7 @@ const HomeScreen = ({ navigation }) => {
     <Button
       title="Go to first puzzle"
       onPress={() =>
-        navigation.navigate('PuzzleOne', { name: '' })
+        navigation.navigate('PuzzleOne', { respondToAppearanceChange: respondToAppearanceChange })
       }
     />
     <Button

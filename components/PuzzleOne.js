@@ -2,21 +2,12 @@ import { StatusBar } from 'expo-status-bar';
 import { Appearance, StyleSheet, Text, View, Button} from 'react-native';
 import {useEffect, useState} from "react";
 
-const PuzzleOne = ({ navigation, route }) => {
+const PuzzleOne = (props) => {
     const [solved, setSolved] = useState(false);
     const [colorSchemeHasChanged, setColorSchemeHasChanged] = useState(false);
   
     useEffect(() => {
-      const originalColorScheme = Appearance.getColorScheme();
-
-      Appearance.addChangeListener((event) => {
-        console.log('heyyyyyy');
-        if (Appearance.getColorScheme() !== originalColorScheme) {
-          setColorSchemeHasChanged(true);
-        } else {
-          setSolved(true);
-        }
-      });
+      Appearance.addChangeListener(() => props.respondToAppearanceChange(setSolved, setColorSchemeHasChanged));
     }, []);
     return (
     <View style={styles.container}>
