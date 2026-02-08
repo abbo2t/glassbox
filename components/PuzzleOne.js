@@ -8,14 +8,20 @@ const PuzzleOne = ({ navigation, route }) => {
   
     useEffect(() => {
       const originalColorScheme = Appearance.getColorScheme();
-
-      Appearance.addChangeListener((event) => {
-        if (Appearance.getColorScheme() !== originalColorScheme) {
+      console.log('Original color scheme:', originalColorScheme);
+      const listener = Appearance.addChangeListener(({ colorScheme }) => {
+        console.log('Color scheme changed:', colorScheme);
+        if (colorScheme && colorScheme !== originalColorScheme) {
           setColorSchemeHasChanged(true);
-        } else {
+        } else if (colorScheme && colorScheme === originalColorScheme) {
           setSolved(true);
         }
       });
+      return () => {
+        if (listener && typeof listener.remove === 'function') {
+          listener.remove();
+        }
+      };
     }, []);
     return (
     <View style={styles.container}>
