@@ -1,30 +1,20 @@
 import { StatusBar } from 'expo-status-bar';
-import { Appearance, StyleSheet, Text, View, Button } from 'react-native';
+import { VolumeManager } from 'react-native-volume-manager';
+import { Appearance, StyleSheet, Text, View, Button, NativeEventEmitter, NativeModules } from 'react-native';
 import { useEffect, useState } from "react";
+import DeviceInfo from 'react-native-device-info';
 import * as ScreenCapture from 'expo-screen-capture';
 import * as MediaLibrary from 'expo-media-library';
+//import HeadphoneDetection from 'react-native-headphone-detection';
+//import { getUniqueId, getManufacturer } from 'react-native-device-info';
+//import { useIsHeadphonesConnected } from 'react-native-device-info';
+
+const deviceInfoEmitter = new NativeEventEmitter(NativeModules.RNDeviceInfo);
 
 const PuzzleEighteen = ({ navigation, route }) => {
-  // VolumeManager is not available in Expo managed workflow.
-  // The volume puzzle is currently disabled.
-  return (
-    <View style={styles.container}>
-      <Text>Volume puzzle is not available in Expo Go.</Text>
-      <StatusBar style="auto" />
-    </View>
-  )
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
-
-const [voluumeHasBeenMaxedOut] = useState(false);
+  const [solved, setSolved] = useState(false);
+  const [volumeHasBeenZeroedOut, setVolumeHasBeenZeroedOut] = useState(false);
+  const [volumeHasBeenMaxedOut, setVolumeHasBeenMaxedOut] = useState(false);
   const [screenshotHasBeenTaken, setScreenshotHasBeenTaken] = useState(false);
   const [headphonesHaveBeenConnected, setHeadphonesHaveBeenConnected] = useState(false);
   let hasZeroedVolumeOut = false;
@@ -101,4 +91,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PuzzleEighteen;export default PuzzleEighteen;
+export default PuzzleEighteen;
