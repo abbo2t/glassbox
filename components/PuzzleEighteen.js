@@ -1,15 +1,25 @@
 import { StatusBar } from 'expo-status-bar';
-import { VolumeManager } from 'react-native-volume-manager';
 import { Appearance, StyleSheet, Text, View, Button, NativeEventEmitter, NativeModules } from 'react-native';
 import { useEffect, useState } from "react";
-import DeviceInfo from 'react-native-device-info';
 import * as ScreenCapture from 'expo-screen-capture';
 import * as MediaLibrary from 'expo-media-library';
 //import HeadphoneDetection from 'react-native-headphone-detection';
 //import { getUniqueId, getManufacturer } from 'react-native-device-info';
 //import { useIsHeadphonesConnected } from 'react-native-device-info';
 
-const deviceInfoEmitter = new NativeEventEmitter(NativeModules.RNDeviceInfo);
+let deviceInfoEmitter = null;
+if (NativeModules.RNDeviceInfo) {
+  deviceInfoEmitter = new NativeEventEmitter(NativeModules.RNDeviceInfo);
+}
+
+let VolumeManager = null;
+try {
+  // Optional dependency: keep puzzle/test runtime stable if the native module is absent.
+  const volumeManagerModule = require('react-native-volume-manager');
+  VolumeManager = volumeManagerModule?.VolumeManager ?? null;
+} catch (error) {
+  VolumeManager = null;
+}
 
 const PuzzleEighteen = ({ navigation, route }) => {
   const [solved, setSolved] = useState(false);
@@ -23,7 +33,7 @@ const PuzzleEighteen = ({ navigation, route }) => {
   let hasConnectedHeadphones = false;
 
   useEffect(() => {
-    const volumeListener = VolumeManager.addVolumeListener((result) => {
+    const volumeListener = VolumeManager?.addVolumeListener((result) => {
       // returns the current volume as a float (0-1)
       console.log(result.volume);
 
@@ -50,7 +60,7 @@ const PuzzleEighteen = ({ navigation, route }) => {
     //   });
     // }
 
-    deviceInfoEmitter.addListener('RNDeviceInfo_headphoneConnectionDidChange', (result) => {
+    const headphoneListener = deviceInfoEmitter?.addListener('RNDeviceInfo_headphoneConnectionDidChange', (result) => {
       console.log(result);
     });
 
@@ -67,7 +77,12 @@ const PuzzleEighteen = ({ navigation, route }) => {
     return function () {
       // remove listener, just call .remove on the volumeListener
       // EventSubscription. Never forget to clean up your listeners.
-      volumeListener.remove();
+      if (volumeListener && typeof volumeListener.remove === 'function') {
+        volumeListener.remove();
+      }
+      if (headphoneListener && typeof headphoneListener.remove === 'function') {
+        headphoneListener.remove();
+      }
     }
   }, []);
   return (

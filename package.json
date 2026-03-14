@@ -7,7 +7,7 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "test": "jest"
+    "test": "jest --config jest.config.json"
   },
   "jest": {
     "preset": "jest-expo",
@@ -21,6 +21,7 @@
     "@react-navigation/native": "^6.0.12",
     "@react-navigation/native-stack": "^6.8.0",
     "expo-dev-client": "~6.0.20",
+    "expo-brightness": "^14.0.0",
     "expo-media-library": "~18.2.1",
     "expo-screen-capture": "~8.0.9",
     "expo-sensors": "~15.0.8",
