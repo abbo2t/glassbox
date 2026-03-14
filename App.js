@@ -7,6 +7,7 @@ import PuzzleOne from './components/PuzzleOne';
 import PuzzleTwentyThree from './components/PuzzleTwentyThree';
 import PuzzleEighteen from './components/PuzzleEighteen';
 import PuzzleLevel from './components/PuzzleLevel';
+import PuzzleSevenAndEight from './components/PuzzleSevenAndEight';
 
 
 const Stack = createNativeStackNavigator();
@@ -20,6 +21,7 @@ export default function App() {
         <Stack.Screen name="PuzzleTwentyThree" component={PuzzleTwentyThree} />
         <Stack.Screen name="PuzzleEighteen" component={PuzzleEighteen} />
         <Stack.Screen name="PuzzleLevel" component={PuzzleLevel} />
+        <Stack.Screen name="PuzzleSevenAndEight" component={PuzzleSevenAndEight} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -50,6 +52,12 @@ const HomeScreen = ({ navigation }) => {
       title="Go to level puzzle"
       onPress={() =>
         navigation.navigate('PuzzleLevel', { name: '' })
+      }
+    />
+    <Button
+      title="Go to 7 and 8 puzzle"
+      onPress={() =>
+        navigation.navigate('PuzzleSevenAndEight', { name: '' })
       }
     />
     </>
