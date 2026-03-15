@@ -1,3 +1,4 @@
+
 import './mocks/matchMedia.mock';
 import React from 'react';
 import { act, render, screen, waitFor } from '@testing-library/react-native';
@@ -12,14 +13,18 @@ import * as Brightness from 'expo-brightness';
 describe('<PuzzleSevenAndEight />', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    jest.useFakeTimers();
   });
 
   afterEach(() => {
+    //jest.useRealTimers();
+  });
+
+  afterAll(() => {
     jest.useRealTimers();
   });
 
   it('tracks both brightness directions and solves after seeing low and high brightness', async () => {
+    jest.useFakeTimers('modern');
     Brightness.getBrightnessAsync
       .mockResolvedValueOnce(0.9)
       .mockResolvedValueOnce(0.0)
@@ -48,6 +53,7 @@ describe('<PuzzleSevenAndEight />', () => {
   });
 
   it('stops polling on unmount', async () => {
+    jest.useFakeTimers('modern');
     Brightness.getBrightnessAsync.mockResolvedValue(0.5);
 
     const view = render(<PuzzleSevenAndEight />);
@@ -55,10 +61,19 @@ describe('<PuzzleSevenAndEight />', () => {
     await waitFor(() => expect(Brightness.getBrightnessAsync).toHaveBeenCalled());
     const callsBeforeUnmount = Brightness.getBrightnessAsync.mock.calls.length;
 
-    view.unmount();
+    await act(async () => {
+      view.unmount();
+    });
 
     await act(async () => {
       jest.advanceTimersByTime(3000);
+    });
+
+    // Flush all pending microtasks (promises)
+    await act(async () => {
+      for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+      }
     });
 
     expect(Brightness.getBrightnessAsync.mock.calls.length).toBe(callsBeforeUnmount);
