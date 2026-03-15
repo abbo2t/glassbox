@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import PuzzleOne from './components/PuzzleOne';
 import PuzzleTwentyThree from './components/PuzzleTwentyThree';
 import PuzzleEighteen from './components/PuzzleEighteen';
+import PuzzleThirteen from './components/PuzzleThirteen';
 import PuzzleLevel from './components/PuzzleLevel';
 import PuzzleSevenAndEight from './components/PuzzleSevenAndEight';
 
@@ -20,6 +21,7 @@ export default function App() {
         <Stack.Screen name="PuzzleOne" component={PuzzleOne} />
         <Stack.Screen name="PuzzleTwentyThree" component={PuzzleTwentyThree} />
         <Stack.Screen name="PuzzleEighteen" component={PuzzleEighteen} />
+        <Stack.Screen name="PuzzleThirteen" component={PuzzleThirteen} />
         <Stack.Screen name="PuzzleLevel" component={PuzzleLevel} />
         <Stack.Screen name="PuzzleSevenAndEight" component={PuzzleSevenAndEight} />
       </Stack.Navigator>
@@ -46,6 +48,12 @@ const HomeScreen = ({ navigation }) => {
       title="Go to 18th puzzle"
       onPress={() =>
         navigation.navigate('PuzzleEighteen', { name: '' })
+      }
+    />
+    <Button
+      title="Go to 13th puzzle"
+      onPress={() =>
+        navigation.navigate('PuzzleThirteen', { name: '' })
       }
     />
     <Button
