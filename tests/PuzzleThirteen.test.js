@@ -1,11 +1,13 @@
 import './mocks/matchMedia.mock';
 import React from 'react';
 import { act, render, screen } from '@testing-library/react-native';
-import { AppState, Platform } from 'react-native';
+import { Platform, View } from 'react-native';
 
 const mockAddListener = jest.fn();
 const mockSetUpdateInterval = jest.fn();
 const mockIsAvailableAsync = jest.fn();
+const mockRequestPermission = jest.fn();
+const mockTakePictureAsync = jest.fn();
 
 jest.mock('expo-sensors', () => ({
   LightSensor: {
@@ -15,29 +17,43 @@ jest.mock('expo-sensors', () => ({
   },
 }));
 
+jest.mock('expo-camera', () => {
+  const ReactLocal = require('react');
+  return {
+    CameraView: ReactLocal.forwardRef((props, ref) => {
+      ReactLocal.useImperativeHandle(ref, () => ({
+        takePictureAsync: (...args) => mockTakePictureAsync(...args),
+      }));
+
+      ReactLocal.useEffect(() => {
+        if (typeof props.onCameraReady === 'function') {
+          props.onCameraReady();
+        }
+      }, [props.onCameraReady]);
+
+      return <View testID="camera-view" />;
+    }),
+    useCameraPermissions: jest.fn(() => [
+      {
+        granted: true,
+        canAskAgain: true,
+      },
+      mockRequestPermission,
+    ]),
+  };
+});
+
+import { useCameraPermissions } from 'expo-camera';
 import PuzzleThirteen from '../components/PuzzleThirteen';
 
 describe('<PuzzleThirteen />', () => {
-  let appStateHandler;
-
   beforeEach(() => {
     jest.clearAllMocks();
     jest.useFakeTimers();
-
-    jest.spyOn(AppState, 'addEventListener').mockImplementation((event, handler) => {
-      if (event === 'change') {
-        appStateHandler = handler;
-      }
-
-      return {
-        remove: jest.fn(),
-      };
-    });
   });
 
   afterEach(() => {
     jest.restoreAllMocks();
-    appStateHandler = undefined;
   });
 
   afterAll(() => {
@@ -53,22 +69,47 @@ describe('<PuzzleThirteen />', () => {
     expect(await screen.findByText('Ambient light sensor is unavailable on this device.')).toBeTruthy();
   });
 
-  it('solves on iOS after screen is off for 10-20 seconds and returns active', async () => {
+  it('solves on iOS after lens is covered for at least 10 seconds then uncovered', async () => {
     const dateNowSpy = jest.spyOn(Date, 'now');
+    let now = 0;
+
+    dateNowSpy.mockImplementation(() => now);
     jest.spyOn(Platform, 'OS', 'get').mockReturnValue('ios');
+    useCameraPermissions.mockReturnValue([
+      {
+        granted: true,
+        canAskAgain: true,
+      },
+      mockRequestPermission,
+    ]);
+
+    mockTakePictureAsync
+      .mockResolvedValueOnce({ base64: 'a'.repeat(500) })
+      .mockResolvedValueOnce({ base64: 'a'.repeat(500) })
+      .mockResolvedValueOnce({ base64: 'a'.repeat(7000) });
 
     render(<PuzzleThirteen />);
 
     expect(await screen.findByText('Target window: 10.0s to 20.0s')).toBeTruthy();
 
     await act(async () => {
-      dateNowSpy.mockReturnValueOnce(0);
-      appStateHandler('inactive');
+      now = 0;
+      jest.advanceTimersByTime(850);
+      await Promise.resolve();
     });
 
     await act(async () => {
-      dateNowSpy.mockReturnValueOnce(12000);
-      appStateHandler('active');
+      now = 11000;
+      jest.advanceTimersByTime(850);
+      await Promise.resolve();
+    });
+
+    expect(await screen.findByText('Ready: uncover now')).toBeTruthy();
+
+    await act(async () => {
+      now = 11500;
+      jest.advanceTimersByTime(850);
+      await Promise.resolve();
     });
 
     expect(await screen.findByText('Puzzle Solved')).toBeTruthy();

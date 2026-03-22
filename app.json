@@ -23,7 +23,8 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.abbo2t.glassbox",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSCameraUsageDescription": "Glassbox uses the camera to detect when you cover and uncover the lens for Puzzle 13."
       }
     },
     "android": {
