@@ -1,185 +1,201 @@
 import { StatusBar } from 'expo-status-bar';
 import { DeviceMotion } from 'expo-sensors';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
+const COLOR_PALETTE = ['#E63946', '#FF9F1C', '#2A9D8F', '#3A86FF', '#8338EC'];
+const getRandomColor = () => COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
 
 const RAD_TO_DEG = 180 / Math.PI;
 const LEVEL_TOL = 2.0;
 const FACE_TOL = 0.9;
 
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-
 const isNear = (value, target, tol) => Math.abs(value - target) <= tol;
+const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
+
+const CIRCLE_SIZE = 220;
+const BUBBLE_SIZE = 28;
+const MAX_OFFSET = (CIRCLE_SIZE - BUBBLE_SIZE) / 2 - 8;
 
 const PuzzleLevel = () => {
-  const [roll, setRoll] = useState(0);
-  const [pitch, setPitch] = useState(0);
-  const [faceUp, setFaceUp] = useState(false);
-  const [faceDown, setFaceDown] = useState(false);
+  const solvedRef = useRef(false);
+  const [solved, setSolved] = useState(false);
+  const [fillColor, setFillColor] = useState('#111111');
+  const [hintVisible, setHintVisible] = useState(false);
+
+  // bubble position in px
+  const [bubbleX, setBubbleX] = useState(0);
+  const [bubbleY, setBubbleY] = useState(0);
+
   const [achievements, setAchievements] = useState({
-    level: false,
-    right: false,
-    upsideDown: false,
-    up: false,
-    down: false,
+    level: false,    // flat, face up, portrait
+    right: false,    // rotated 90° right
+    upsideDown: false, // rotated 180°
+    faceUp: false,   // lying flat face up
+    faceDown: false, // lying flat face down
   });
 
   useEffect(() => {
-    DeviceMotion.setUpdateInterval(80);
-    const subscription = DeviceMotion.addListener((data) => {
-      const gravity = data.accelerationIncludingGravity;
-      if (!gravity) {
-        return;
-      }
+    DeviceMotion.setUpdateInterval(60);
+
+    const sub = DeviceMotion.addListener(({ rotation, accelerationIncludingGravity }) => {
+      if (solvedRef.current) return;
+      const gravity = accelerationIncludingGravity;
+      if (!gravity) return;
 
       const { x, y, z } = gravity;
-      const nextRoll = Math.atan2(y, z) * RAD_TO_DEG;
-      const nextPitch = Math.atan2(-x, Math.sqrt(y * y + z * z)) * RAD_TO_DEG;
-      const nextFaceUp = z > FACE_TOL;
-      const nextFaceDown = z < -FACE_TOL;
+      const roll  = Math.atan2(y, z) * RAD_TO_DEG;
+      const pitch = Math.atan2(-x, Math.sqrt(y * y + z * z)) * RAD_TO_DEG;
+      const faceUp   = z >  FACE_TOL;
+      const faceDown = z < -FACE_TOL;
 
-      setRoll(nextRoll);
-      setPitch(nextPitch);
-      setFaceUp(nextFaceUp);
-      setFaceDown(nextFaceDown);
+      const bx = clamp((roll  / 35) * MAX_OFFSET, -MAX_OFFSET, MAX_OFFSET);
+      const by = clamp((pitch / 35) * MAX_OFFSET, -MAX_OFFSET, MAX_OFFSET);
+      setBubbleX(bx);
+      setBubbleY(by);
 
-      setAchievements((prev) => ({
-        level: prev.level || (isNear(nextRoll, 0, LEVEL_TOL) && isNear(nextPitch, 0, LEVEL_TOL)),
-        right:
-          prev.right ||
-          (isNear(Math.abs(nextRoll), 90, LEVEL_TOL) && isNear(nextPitch, 0, LEVEL_TOL)),
-        upsideDown:
-          prev.upsideDown ||
-          (isNear(Math.abs(nextRoll), 180, LEVEL_TOL) && isNear(nextPitch, 0, LEVEL_TOL)),
-        up: prev.up || nextFaceUp,
-        down: prev.down || nextFaceDown,
-      }));
+      setAchievements((prev) => {
+        const next = {
+          level:      prev.level      || (isNear(roll, 0, LEVEL_TOL) && isNear(pitch, 0, LEVEL_TOL)),
+          right:      prev.right      || (isNear(Math.abs(roll), 90, LEVEL_TOL) && isNear(pitch, 0, LEVEL_TOL)),
+          upsideDown: prev.upsideDown || (isNear(Math.abs(roll), 180, LEVEL_TOL) && isNear(pitch, 0, LEVEL_TOL)),
+          faceUp:     prev.faceUp     || faceUp,
+          faceDown:   prev.faceDown   || faceDown,
+        };
+
+        if (!solvedRef.current && Object.values(next).every(Boolean)) {
+          solvedRef.current = true;
+          setFillColor(getRandomColor());
+          setSolved(true);
+        }
+
+        return next;
+      });
     });
 
-    return () => {
-      subscription.remove();
-    };
+    return () => sub.remove();
   }, []);
 
-  const solved =
-    achievements.level &&
-    achievements.right &&
-    achievements.upsideDown &&
-    achievements.up &&
-    achievements.down;
+  const totalDone = Object.values(achievements).filter(Boolean).length;
 
-  const bubbleOffset = useMemo(() => {
-    const maxOffset = (CIRCLE_SIZE - BUBBLE_SIZE) / 2 - 6;
-    const x = clamp((roll / 35) * maxOffset, -maxOffset, maxOffset);
-    const y = clamp((pitch / 35) * maxOffset, -maxOffset, maxOffset);
-    return { x, y };
-  }, [roll, pitch]);
+  if (solved) {
+    return (
+      <View style={[styles.container, { backgroundColor: fillColor }]}>
+        <Text style={styles.solvedTitle}>Puzzle Solved</Text>
+        <Text style={styles.solvedSubtitle}>You found every angle.</Text>
+        <StatusBar style="light" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <View style={styles.levelWrapper}>
-        <View style={styles.circle}>
-          <View style={styles.crossVertical} />
-          <View style={styles.crossHorizontal} />
-          <View
-            style={[
-              styles.bubble,
-              { transform: [{ translateX: bubbleOffset.x }, { translateY: bubbleOffset.y }] },
-            ]}
-          />
-        </View>
-        <View style={styles.readout}>
-          <Text style={styles.angleText}>Roll {roll.toFixed(1)}
-          </Text>
-          <Text style={styles.angleText}>Pitch {pitch.toFixed(1)}
-          </Text>
-        </View>
+      <Text style={styles.title}>Puzzle 1–6</Text>
+
+      <View style={styles.circle}>
+        <View style={styles.crossV} />
+        <View style={styles.crossH} />
+        <View
+          style={[
+            styles.bubble,
+            { transform: [{ translateX: bubbleX }, { translateY: bubbleY }] },
+          ]}
+        />
       </View>
 
-      <View style={styles.checklist}>
-        <Text style={styles.checkItem}>{achievements.level ? '✓' : '○'} 0° level</Text>
-        <Text style={styles.checkItem}>{achievements.right ? '✓' : '○'} 90° right edge</Text>
-        <Text style={styles.checkItem}>{achievements.upsideDown ? '✓' : '○'} 180° upside down</Text>
-        <Text style={styles.checkItem}>{achievements.up ? '✓' : '○'} face up</Text>
-        <Text style={styles.checkItem}>{achievements.down ? '✓' : '○'} face down</Text>
-        <Text style={styles.resultText}>{solved ? 'Solved' : 'Align to clear all'}</Text>
+      <View style={styles.dotsRow}>
+        {Object.values(achievements).map((done, i) => (
+          <View key={i} style={[styles.dot, done && styles.dotDone]} />
+        ))}
       </View>
 
-      <StatusBar style="light" />
+      {!hintVisible && (
+        <Text style={styles.hint} onPress={() => setHintVisible(true)}>hint</Text>
+      )}
+      {hintVisible && (
+        <Text style={styles.copy}>Rotate your phone into every orientation.</Text>
+      )}
+
+      <StatusBar style="dark" />
     </View>
   );
 };
 
-const CIRCLE_SIZE = 240;
-const BUBBLE_SIZE = 24;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#0b0b0b',
+    backgroundColor: '#f4f3ee',
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 24,
+    gap: 20,
   },
-  levelWrapper: {
-    alignItems: 'center',
+  title: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1f2933',
   },
   circle: {
     width: CIRCLE_SIZE,
     height: CIRCLE_SIZE,
     borderRadius: CIRCLE_SIZE / 2,
-    borderWidth: 2,
-    borderColor: '#2a2a2a',
+    borderWidth: 1.5,
+    borderColor: '#c8c5bc',
+    backgroundColor: '#eceae3',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#111111',
   },
-  crossVertical: {
+  crossV: {
     position: 'absolute',
-    width: 2,
+    width: 1,
     height: CIRCLE_SIZE - 40,
-    backgroundColor: '#2f2f2f',
+    backgroundColor: '#c8c5bc',
   },
-  crossHorizontal: {
+  crossH: {
     position: 'absolute',
-    height: 2,
+    height: 1,
     width: CIRCLE_SIZE - 40,
-    backgroundColor: '#2f2f2f',
+    backgroundColor: '#c8c5bc',
   },
   bubble: {
     width: BUBBLE_SIZE,
     height: BUBBLE_SIZE,
     borderRadius: BUBBLE_SIZE / 2,
-    backgroundColor: '#f7d35a',
-    borderWidth: 2,
-    borderColor: '#f4c847',
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    backgroundColor: '#334e68',
   },
-  readout: {
-    marginTop: 16,
-    alignItems: 'center',
+  dotsRow: {
+    flexDirection: 'row',
+    gap: 10,
   },
-  angleText: {
-    color: '#d9d9d9',
-    fontSize: 16,
-    letterSpacing: 1,
+  dot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#c8c5bc',
   },
-  checklist: {
-    marginTop: 28,
-    width: 260,
+  dotDone: {
+    backgroundColor: '#334e68',
   },
-  checkItem: {
-    color: '#c9c9c9',
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  resultText: {
-    marginTop: 12,
-    color: '#f7d35a',
-    fontSize: 16,
+  copy: {
     textAlign: 'center',
+    fontSize: 16,
+    lineHeight: 22,
+    color: '#334e68',
+  },
+  hint: {
+    fontSize: 13,
+    color: '#9c6644',
+    textDecorationLine: 'underline',
+  },
+  solvedTitle: {
+    fontSize: 36,
+    fontWeight: '700',
+    color: '#ffffff',
+  },
+  solvedSubtitle: {
+    marginTop: 8,
+    fontSize: 18,
+    color: '#ffffff',
   },
 });
 
